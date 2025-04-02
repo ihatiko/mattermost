@@ -656,6 +656,20 @@ func (a *App) LoginByOAuth(c request.CTX, service string, userData io.Reader, te
 		return nil, err
 	}
 
+	if user.AuthService == model.ServiceOpenid {
+		url := fmt.Sprintf("https://avatars.yandex.net/get-yapic/%s/200x200", user.Props["avatar_id"])
+		file, err := a.DownloadFromURL(url)
+		if err != nil || len(file) == 0 {
+			return user, nil
+		}
+		buffer := bytes.NewReader(file)
+		_, _ = buffer.Seek(0, io.SeekStart)
+		err = a.SetProfileImageFromFile(c, user.Id, buffer)
+		if err != nil {
+			return user, nil
+		}
+	}
+
 	return user, nil
 }
 

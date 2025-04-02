@@ -57,7 +57,8 @@ func userFromYandexUser(logger mlog.LoggerIFace, glu *OpenIdUser) *model.User {
 	userId := glu.getAuthData()
 	user.AuthData = &userId
 	user.AuthService = model.ServiceOpenid
-
+	user.Props = make(model.StringMap)
+	user.Props["avatar_id"] = glu.DefaultAvatarId
 	return user
 }
 
