@@ -426,6 +426,7 @@ func completeOAuth(c *Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func loginWithOAuth(c *Context, w http.ResponseWriter, r *http.Request) {
+
 	c.RequireService()
 	if c.Err != nil {
 		return
@@ -451,6 +452,7 @@ func loginWithOAuth(c *Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	authURL, err := c.App.GetOAuthLoginEndpoint(c.AppContext, w, r, c.Params.Service, teamId, model.OAuthActionLogin, redirectURL, loginHint, false, desktopToken)
+	fmt.Println("INFO", authURL, err)
 	if err != nil {
 		c.Err = err
 		return

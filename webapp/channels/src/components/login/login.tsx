@@ -190,17 +190,15 @@ const Login = ({onCustomizeHeader}: LoginProps) => {
             });
         }
 
-        if (enableSignUpWithOpenId) {
-            const url = `${Client4.getOAuthRoute()}/openid/login${search}`;
-            externalLoginOptions.push({
-                id: 'openid',
-                url,
-                icon: <LoginOpenIDIcon/>,
-                label: OpenIdButtonText || formatMessage({id: 'login.openid', defaultMessage: 'Open ID'}),
-                style: {color: OpenIdButtonColor, borderColor: OpenIdButtonColor},
-                onClick: desktopExternalAuth(url),
-            });
-        }
+        const url = `${Client4.getOAuthRoute()}/openid/login${search}`;
+        externalLoginOptions.push({
+            id: 'openid',
+            url,
+            icon: <LoginOpenIDIcon/>,
+            label: OpenIdButtonText || formatMessage({id: 'login.openid', defaultMessage: 'Open ID'}),
+            style: {color: OpenIdButtonColor, borderColor: OpenIdButtonColor},
+            onClick: desktopExternalAuth(url),
+        });
 
         if (enableSignUpWithSaml) {
             const url = `${Client4.getUrl()}/login/sso/saml${search}`;

@@ -286,25 +286,25 @@ export default class LicenseSettings extends React.PureComponent<Props, State> {
 
         if (!this.props.enterpriseReady) { // Team Edition
             // Note: DO NOT LOCALISE THESE STRINGS. Legally we can not since the license is in English.
-            leftPanel = (
-                <TeamEditionLeftPanel
-                    openEELicenseModal={this.openEELicenseModal}
-                    currentPlan={this.currentPlan}
-                />
-            );
+            // leftPanel = (
+            //     <TeamEditionLeftPanel
+            //         openEELicenseModal={this.openEELicenseModal}
+            //         currentPlan={this.currentPlan}
+            //     />
+            // );
 
-            rightPanel = (
-                <TeamEditionRightPanel
-                    upgradingPercentage={this.state.upgradingPercentage}
-                    upgradeError={this.state.upgradeError}
-                    restartError={this.state.restartError}
-                    handleRestart={this.handleRestart}
-                    handleUpgrade={this.handleUpgrade}
-                    restarting={this.state.restarting}
-                    openEEModal={this.openEELicenseModal}
-                    setClickNormalUpgradeBtn={this.setClickNormalUpgradeBtn}
-                />
-            );
+            // rightPanel = (
+            //     <TeamEditionRightPanel
+            //         upgradingPercentage={this.state.upgradingPercentage}
+            //         upgradeError={this.state.upgradeError}
+            //         restartError={this.state.restartError}
+            //         handleRestart={this.handleRestart}
+            //         handleUpgrade={this.handleUpgrade}
+            //         restarting={this.state.restarting}
+            //         openEEModal={this.openEELicenseModal}
+            //         setClickNormalUpgradeBtn={this.setClickNormalUpgradeBtn}
+            //     />
+            // );
         } else if (license.IsLicensed === 'true') {
             // Note: DO NOT LOCALISE THESE STRINGS. Legally we can not since the license is in English.
             leftPanel = (

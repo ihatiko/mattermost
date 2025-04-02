@@ -5108,10 +5108,6 @@ const AdminDefinition: AdminDefinitionType = {
             openid: {
                 url: 'authentication/openid',
                 title: defineMessage({id: 'admin.sidebar.openid', defaultMessage: 'OpenID Connect'}),
-                isHidden: it.any(
-                    it.all(it.not(it.licensedForFeature('OpenId')), it.not(it.cloudLicensed)),
-                    it.not(it.userHasReadPermissionOnResource(RESOURCE_KEYS.AUTHENTICATION.OPENID)),
-                ),
                 schema: {
                     id: 'OpenIdSettings',
                     name: defineMessage({id: 'admin.authentication.openid', defaultMessage: 'OpenID Connect'}),
@@ -5450,10 +5446,6 @@ const AdminDefinition: AdminDefinitionType = {
                 url: 'authentication/openid',
                 isDiscovery: true,
                 title: defineMessage({id: 'admin.sidebar.openid', defaultMessage: 'OpenID Connect'}),
-                isHidden: it.any(
-                    it.any(it.licensedForFeature('OpenId'), it.cloudLicensed),
-                    it.not(it.enterpriseReady),
-                ),
                 schema: {
                     id: 'OpenIdSettings',
                     name: defineMessage({id: 'admin.authentication.openid', defaultMessage: 'OpenID Connect'}),

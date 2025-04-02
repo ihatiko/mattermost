@@ -159,7 +159,6 @@ func GenerateClientConfig(c *model.Config, telemetryID string, license *model.Li
 	props["WranglerMoveThreadFromPrivateChannelEnable"] = strconv.FormatBool(*c.WranglerSettings.MoveThreadFromPrivateChannelEnable)
 	props["WranglerMoveThreadFromDirectMessageChannelEnable"] = strconv.FormatBool(*c.WranglerSettings.MoveThreadFromDirectMessageChannelEnable)
 	props["WranglerMoveThreadFromGroupMessageChannelEnable"] = strconv.FormatBool(*c.WranglerSettings.MoveThreadFromGroupMessageChannelEnable)
-
 	if license != nil {
 		props["ExperimentalEnableAuthenticationTransfer"] = strconv.FormatBool(*c.ServiceSettings.ExperimentalEnableAuthenticationTransfer)
 
@@ -207,13 +206,6 @@ func GenerateClientConfig(c *model.Config, telemetryID string, license *model.Li
 			props["AllowBannerDismissal"] = strconv.FormatBool(*c.AnnouncementSettings.AllowBannerDismissal)
 		}
 
-		if *license.Features.ThemeManagement {
-			props["EnableThemeSelection"] = strconv.FormatBool(*c.ThemeSettings.EnableThemeSelection)
-			props["DefaultTheme"] = *c.ThemeSettings.DefaultTheme
-			props["AllowCustomThemes"] = strconv.FormatBool(*c.ThemeSettings.AllowCustomThemes)
-			props["AllowedThemes"] = strings.Join(c.ThemeSettings.AllowedThemes, ",")
-		}
-
 		if *license.Features.DataRetention {
 			props["DataRetentionEnableMessageDeletion"] = strconv.FormatBool(*c.DataRetentionSettings.EnableMessageDeletion)
 			props["DataRetentionMessageRetentionHours"] = strconv.FormatInt(int64(c.DataRetentionSettings.GetMessageRetentionHours()), 10)
@@ -238,7 +230,10 @@ func GenerateClientConfig(c *model.Config, telemetryID string, license *model.Li
 			props["MobileJailbreakProtection"] = strconv.FormatBool(*c.NativeAppSettings.MobileJailbreakProtection)
 		}
 	}
-
+	props["EnableThemeSelection"] = strconv.FormatBool(*c.ThemeSettings.EnableThemeSelection)
+	props["DefaultTheme"] = *c.ThemeSettings.DefaultTheme
+	props["AllowCustomThemes"] = strconv.FormatBool(*c.ThemeSettings.AllowCustomThemes)
+	props["AllowedThemes"] = strings.Join(c.ThemeSettings.AllowedThemes, ",")
 	return props
 }
 
@@ -392,13 +387,6 @@ func GenerateLimitedClientConfig(c *model.Config, telemetryID string, license *m
 		if *license.Features.Office365OAuth {
 			props["EnableSignUpWithOffice365"] = strconv.FormatBool(*c.Office365Settings.Enable)
 		}
-
-		if *license.Features.OpenId {
-			props["EnableSignUpWithOpenId"] = strconv.FormatBool(*c.OpenIdSettings.Enable)
-			props["OpenIdButtonColor"] = *c.OpenIdSettings.ButtonColor
-			props["OpenIdButtonText"] = *c.OpenIdSettings.ButtonText
-		}
-
 		if license.SkuShortName == model.LicenseShortSkuEnterprise {
 			props["MobileEnableBiometrics"] = strconv.FormatBool(*c.NativeAppSettings.MobileEnableBiometrics)
 			props["MobilePreventScreenCapture"] = strconv.FormatBool(*c.NativeAppSettings.MobilePreventScreenCapture)
@@ -406,6 +394,9 @@ func GenerateLimitedClientConfig(c *model.Config, telemetryID string, license *m
 		}
 	}
 
+	props["EnableSignUpWithOpenId"] = strconv.FormatBool(*c.OpenIdSettings.Enable)
+	props["OpenIdButtonColor"] = *c.OpenIdSettings.ButtonColor
+	props["OpenIdButtonText"] = *c.OpenIdSettings.ButtonText
 	for key, value := range c.FeatureFlags.ToMap() {
 		props["FeatureFlag"+key] = value
 	}

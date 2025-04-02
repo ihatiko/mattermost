@@ -50,12 +50,12 @@ const MenuStartTrial = (props: Props): JSX.Element | null => {
             role='menuitem'
             id={props.id}
         >
-            <FreeVersionBadge>{'FREE EDITION'}</FreeVersionBadge>
+            <FreeVersionBadge>{'SalamPay'}</FreeVersionBadge>
             <div className='editionText'>
                 {formatMessage(
                     {
                         id: 'navbar_dropdown.versionText',
-                        defaultMessage: 'This is the free <link>unsupported</link> edition of Mattermost.',
+                        defaultMessage: 'SalamPay',
                     },
                     {
                         link: (msg: React.ReactNode) => (
