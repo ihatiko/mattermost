@@ -393,15 +393,13 @@ func GenerateLimitedClientConfig(c *model.Config, telemetryID string, license *m
 			props["EnableSignUpWithOffice365"] = strconv.FormatBool(*c.Office365Settings.Enable)
 		}
 		if license.SkuShortName == model.LicenseShortSkuEnterprise {
-
-
-		if model.MinimumEnterpriseLicense(license) {
-			props["MobileEnableBiometrics"] = strconv.FormatBool(*c.NativeAppSettings.MobileEnableBiometrics)
-			props["MobilePreventScreenCapture"] = strconv.FormatBool(*c.NativeAppSettings.MobilePreventScreenCapture)
-			props["MobileJailbreakProtection"] = strconv.FormatBool(*c.NativeAppSettings.MobileJailbreakProtection)
+			if model.MinimumEnterpriseLicense(license) {
+				props["MobileEnableBiometrics"] = strconv.FormatBool(*c.NativeAppSettings.MobileEnableBiometrics)
+				props["MobilePreventScreenCapture"] = strconv.FormatBool(*c.NativeAppSettings.MobilePreventScreenCapture)
+				props["MobileJailbreakProtection"] = strconv.FormatBool(*c.NativeAppSettings.MobileJailbreakProtection)
+			}
 		}
 	}
-
 	props["EnableSignUpWithOpenId"] = strconv.FormatBool(*c.OpenIdSettings.Enable)
 	props["OpenIdButtonColor"] = *c.OpenIdSettings.ButtonColor
 	props["OpenIdButtonText"] = *c.OpenIdSettings.ButtonText
@@ -410,6 +408,7 @@ func GenerateLimitedClientConfig(c *model.Config, telemetryID string, license *m
 	}
 
 	return props
+
 }
 
 func getGiphySdkKey(ss model.ServiceSettings) string {
