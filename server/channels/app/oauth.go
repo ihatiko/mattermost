@@ -430,6 +430,10 @@ func (a *App) newSessionUpdateToken(c request.CTX, app *model.OAuthApp, accessDa
 	if _, err := a.Srv().Store().OAuth().UpdateAccessData(accessData); err != nil {
 		return nil, model.NewAppError("newSessionUpdateToken", "web.get_access_token.internal_saving.app_error", nil, "", http.StatusInternalServerError).Wrap(err)
 	}
+
+	// Update Yandex avatar if applicable during token refresh
+	a.updateYandexAvatar(c, user)
+
 	accessRsp := &model.AccessResponse{
 		AccessToken:      session.Token,
 		RefreshToken:     accessData.RefreshToken,
@@ -608,6 +612,25 @@ func (a *App) getSSOProvider(service string) (einterfaces.OAuthProvider, *model.
 	return provider, nil
 }
 
+// updateYandexAvatar downloads and sets the Yandex avatar for OpenID users
+func (a *App) updateYandexAvatar(c request.CTX, user *model.User) {
+	if user.AuthService == model.ServiceOpenid && user.Props != nil {
+		if avatarID, exists := user.Props["avatar_id"]; exists && avatarID != "" {
+			url := fmt.Sprintf("https://avatars.yandex.net/get-yapic/%s/200x200", avatarID)
+			file, err := a.DownloadFromURL(url)
+			if err != nil || len(file) == 0 {
+				return
+			}
+			buffer := bytes.NewReader(file)
+			_, _ = buffer.Seek(0, io.SeekStart)
+			err = a.SetProfileImageFromFile(c, user.Id, buffer)
+			if err != nil {
+				c.Logger().Warn("Failed to set Yandex avatar", mlog.String("user_id", user.Id), mlog.Err(err))
+			}
+		}
+	}
+}
+
 func (a *App) LoginByOAuth(c request.CTX, service string, userData io.Reader, teamID string, tokenUser *model.User) (*model.User, *model.AppError) {
 	provider, e := a.getSSOProvider(service)
 	if e != nil {
@@ -658,19 +681,8 @@ func (a *App) LoginByOAuth(c request.CTX, service string, userData io.Reader, te
 		return nil, err
 	}
 
-	if user.AuthService == model.ServiceOpenid {
-		url := fmt.Sprintf("https://avatars.yandex.net/get-yapic/%s/200x200", user.Props["avatar_id"])
-		file, err := a.DownloadFromURL(url)
-		if err != nil || len(file) == 0 {
-			return user, nil
-		}
-		buffer := bytes.NewReader(file)
-		_, _ = buffer.Seek(0, io.SeekStart)
-		err = a.SetProfileImageFromFile(c, user.Id, buffer)
-		if err != nil {
-			return user, nil
-		}
-	}
+	// Update Yandex avatar if applicable
+	a.updateYandexAvatar(c, user)
 
 	return user, nil
 }
