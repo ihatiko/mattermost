@@ -228,13 +228,13 @@ func GenerateClientConfig(c *model.Config, telemetryID string, license *model.Li
 			props["ExperimentalRemoteClusterService"] = strconv.FormatBool(c.FeatureFlags.EnableRemoteClusterService && *c.ConnectedWorkspacesSettings.EnableRemoteClusterService)
 		}
 
-		if model.MinimumProfessionalLicense(license) {
+		if license.SkuShortName == model.LicenseShortSkuProfessional || license.SkuShortName == model.LicenseShortSkuEnterprise {
 			props["EnableCustomGroups"] = strconv.FormatBool(*c.ServiceSettings.EnableCustomGroups)
 			props["PostAcknowledgements"] = "true"
 			props["ScheduledPosts"] = strconv.FormatBool(*c.ServiceSettings.ScheduledPosts)
 		}
 
-		if model.MinimumEnterpriseLicense(license) {
+		if license.SkuShortName == model.LicenseShortSkuEnterprise {
 			props["MobileEnableBiometrics"] = strconv.FormatBool(*c.NativeAppSettings.MobileEnableBiometrics)
 			props["MobilePreventScreenCapture"] = strconv.FormatBool(*c.NativeAppSettings.MobilePreventScreenCapture)
 			props["MobileJailbreakProtection"] = strconv.FormatBool(*c.NativeAppSettings.MobileJailbreakProtection)
@@ -296,10 +296,7 @@ func GenerateLimitedClientConfig(c *model.Config, telemetryID string, license *m
 	props["PrivacyPolicyLink"] = *c.SupportSettings.PrivacyPolicyLink
 	props["AboutLink"] = *c.SupportSettings.AboutLink
 	props["HelpLink"] = *c.SupportSettings.HelpLink
-	props["ReportAProblemType"] = *c.SupportSettings.ReportAProblemType
 	props["ReportAProblemLink"] = *c.SupportSettings.ReportAProblemLink
-	props["ReportAProblemMail"] = *c.SupportSettings.ReportAProblemMail
-	props["AllowDownloadLogs"] = strconv.FormatBool(*c.SupportSettings.AllowDownloadLogs)
 	props["ForgotPasswordLink"] = *c.SupportSettings.ForgotPasswordLink
 	props["SupportEmail"] = *c.SupportSettings.SupportEmail
 	props["EnableAskCommunityLink"] = strconv.FormatBool(*c.SupportSettings.EnableAskCommunityLink)
@@ -397,17 +394,12 @@ func GenerateLimitedClientConfig(c *model.Config, telemetryID string, license *m
 		if *license.Features.Office365OAuth {
 			props["EnableSignUpWithOffice365"] = strconv.FormatBool(*c.Office365Settings.Enable)
 		}
-
-		if *license.Features.OpenId {
-			props["EnableSignUpWithOpenId"] = strconv.FormatBool(*c.OpenIdSettings.Enable)
-			props["OpenIdButtonColor"] = *c.OpenIdSettings.ButtonColor
-			props["OpenIdButtonText"] = *c.OpenIdSettings.ButtonText
-		}
-
-		if model.MinimumEnterpriseLicense(license) {
-			props["MobileEnableBiometrics"] = strconv.FormatBool(*c.NativeAppSettings.MobileEnableBiometrics)
-			props["MobilePreventScreenCapture"] = strconv.FormatBool(*c.NativeAppSettings.MobilePreventScreenCapture)
-			props["MobileJailbreakProtection"] = strconv.FormatBool(*c.NativeAppSettings.MobileJailbreakProtection)
+		if license.SkuShortName == model.LicenseShortSkuEnterprise {
+			if model.MinimumEnterpriseLicense(license) {
+				props["MobileEnableBiometrics"] = strconv.FormatBool(*c.NativeAppSettings.MobileEnableBiometrics)
+				props["MobilePreventScreenCapture"] = strconv.FormatBool(*c.NativeAppSettings.MobilePreventScreenCapture)
+				props["MobileJailbreakProtection"] = strconv.FormatBool(*c.NativeAppSettings.MobileJailbreakProtection)
+			}
 		}
 
 		if model.MinimumEnterpriseAdvancedLicense(license) {
@@ -415,12 +407,15 @@ func GenerateLimitedClientConfig(c *model.Config, telemetryID string, license *m
 			props["MobileAllowPdfLinkNavigation"] = strconv.FormatBool(*c.NativeAppSettings.MobileAllowPdfLinkNavigation)
 		}
 	}
-
+	props["EnableSignUpWithOpenId"] = strconv.FormatBool(*c.OpenIdSettings.Enable)
+	props["OpenIdButtonColor"] = *c.OpenIdSettings.ButtonColor
+	props["OpenIdButtonText"] = *c.OpenIdSettings.ButtonText
 	for key, value := range c.FeatureFlags.ToMap() {
 		props["FeatureFlag"+key] = value
 	}
 
 	return props
+
 }
 
 func getGiphySdkKey(ss model.ServiceSettings) string {

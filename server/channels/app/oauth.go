@@ -9,6 +9,7 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/oauth2"
 	"io"
 	"net/http"
 	"net/url"
@@ -26,6 +27,7 @@ import (
 	"github.com/mattermost/mattermost/server/v8/channels/store"
 	"github.com/mattermost/mattermost/server/v8/channels/utils"
 	"github.com/mattermost/mattermost/server/v8/einterfaces"
+	"golang.org/x/oauth2/yandex"
 )
 
 const (
@@ -459,7 +461,7 @@ func (a *App) GetOAuthLoginEndpoint(c request.CTX, w http.ResponseWriter, r *htt
 	if err != nil {
 		return "", err
 	}
-
+	fmt.Println(authURL)
 	return authURL, nil
 }
 
@@ -656,6 +658,20 @@ func (a *App) LoginByOAuth(c request.CTX, service string, userData io.Reader, te
 		return nil, err
 	}
 
+	if user.AuthService == model.ServiceOpenid {
+		url := fmt.Sprintf("https://avatars.yandex.net/get-yapic/%s/200x200", user.Props["avatar_id"])
+		file, err := a.DownloadFromURL(url)
+		if err != nil || len(file) == 0 {
+			return user, nil
+		}
+		buffer := bytes.NewReader(file)
+		_, _ = buffer.Seek(0, io.SeekStart)
+		err = a.SetProfileImageFromFile(c, user.Id, buffer)
+		if err != nil {
+			return user, nil
+		}
+	}
+
 	return user, nil
 }
 
@@ -798,7 +814,15 @@ func (a *App) GetAuthorizationCode(c request.CTX, w http.ResponseWriter, r *http
 	if loginHint != "" {
 		authURL += "&login_hint=" + utils.URLEncode(loginHint)
 	}
-
+	if sso.ButtonText != nil && (strings.ToLower(*sso.ButtonText) == "yandex" || strings.ToLower(*sso.ButtonText) == "яндекс") {
+		oauthConfig := &oauth2.Config{
+			ClientID:     *sso.Id,     // Замените на ваш Client ID
+			ClientSecret: *sso.Secret, // Замените на ваш Client Secret
+			Endpoint:     yandex.Endpoint,
+		}
+		url := oauthConfig.AuthCodeURL(state, oauth2.AccessTypeOnline)
+		return url, nil
+	}
 	return authURL, nil
 }
 
@@ -869,7 +893,9 @@ func (a *App) AuthorizeOAuthUser(c request.CTX, w http.ResponseWriter, r *http.R
 	p.Set("code", code)
 	p.Set("grant_type", model.AccessTokenGrantType)
 	p.Set("redirect_uri", redirectURI)
-
+	if sso.ButtonText != nil && (strings.ToLower(*sso.ButtonText) == "yandex" || strings.ToLower(*sso.ButtonText) == "яндекс") {
+		*sso.TokenEndpoint = yandex.Endpoint.TokenURL
+	}
 	req, requestErr := http.NewRequest("POST", *sso.TokenEndpoint, strings.NewReader(p.Encode()))
 	if requestErr != nil {
 		return nil, "", stateProps, nil, model.NewAppError("AuthorizeOAuthUser", "api.user.authorize_oauth_user.token_failed.app_error", nil, "", http.StatusInternalServerError).Wrap(requestErr)
@@ -910,7 +936,9 @@ func (a *App) AuthorizeOAuthUser(c request.CTX, w http.ResponseWriter, r *http.R
 			return nil, "", stateProps, nil, model.NewAppError("AuthorizeOAuthUser", "api.user.authorize_oauth_user.token_failed.app_error", nil, "", http.StatusInternalServerError).Wrap(err)
 		}
 	}
-
+	if sso.ButtonText != nil && (strings.ToLower(*sso.ButtonText) == "yandex" || strings.ToLower(*sso.ButtonText) == "яндекс") {
+		*sso.UserAPIEndpoint = "https://login.yandex.ru/info"
+	}
 	req, requestErr = http.NewRequest("GET", *sso.UserAPIEndpoint, strings.NewReader(""))
 	if requestErr != nil {
 		return nil, "", stateProps, nil, model.NewAppError("AuthorizeOAuthUser", "api.user.authorize_oauth_user.service.app_error", map[string]any{"Service": service}, "", http.StatusInternalServerError).Wrap(requestErr)

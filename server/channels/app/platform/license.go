@@ -295,7 +295,7 @@ func (ps *PlatformService) ClientLicense() map[string]string {
 	if clientLicense, _ := ps.clientLicenseValue.Load().(map[string]string); clientLicense != nil {
 		return clientLicense
 	}
-	return map[string]string{"IsLicensed": "false"}
+	return map[string]string{"IsLicensed": "true"}
 }
 
 func (ps *PlatformService) RemoveLicense() *model.AppError {
