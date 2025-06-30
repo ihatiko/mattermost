@@ -165,7 +165,7 @@ const Login = ({onCustomizeHeader}: LoginProps) => {
                 icon: <LoginGitlabIcon/>,
                 label: GitLabButtonText || formatMessage({id: 'login.gitlab', defaultMessage: 'GitLab'}),
                 style: {color: GitLabButtonColor, borderColor: GitLabButtonColor},
-                onClick: handleExternalAuth(url, 'gitlab'),
+                onClick: desktopExternalAuth(url),
             });
         }
 
