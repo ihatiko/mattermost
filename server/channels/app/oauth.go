@@ -424,6 +424,11 @@ func (a *App) newSessionUpdateToken(rctx request.CTX, app *model.OAuthApp, acces
 		return nil, err
 	}
 
+	// Асинхронно синхронизируем аватар из SSO (например, Яндекс через OpenID)
+	a.Srv().Go(func() {
+		a.syncSSOAvatarIfNeeded(rctx, user)
+	})
+
 	accessData.Token = session.Token
 	accessData.RefreshToken = model.NewId()
 	accessData.ExpiresAt = session.ExpiresAt
@@ -439,6 +444,36 @@ func (a *App) newSessionUpdateToken(rctx request.CTX, app *model.OAuthApp, acces
 	}
 
 	return accessRsp, nil
+}
+
+// Синхронизирует аватар пользователя из SSO-провайдера, если это уместно (OpenID/Яндекс)
+func (a *App) syncSSOAvatarIfNeeded(rctx request.CTX, user *model.User) {
+	if user == nil {
+		return
+	}
+	// Для OpenID (в т.ч. Яндекс), где avatar_id хранится в user.Props
+	if user.AuthService != model.ServiceOpenid {
+		return
+	}
+	if user.Props == nil {
+		return
+	}
+	avatarID, ok := user.Props["avatar_id"]
+	if !ok || avatarID == "" {
+		return
+	}
+
+	u := fmt.Sprintf("https://avatars.yandex.net/get-yapic/%s/200x200", avatarID)
+	file, err := a.DownloadFromURL(u)
+	if err != nil || len(file) == 0 {
+		return
+	}
+
+	buffer := bytes.NewReader(file)
+	_, _ = buffer.Seek(0, io.SeekStart)
+	if err := a.SetProfileImageFromFile(rctx, user.Id, buffer); err != nil {
+		rctx.Logger().Warn("failed to set profile image from SSO avatar", mlog.Err(err))
+	}
 }
 
 func (a *App) GetOAuthLoginEndpoint(rctx request.CTX, w http.ResponseWriter, r *http.Request, service, action, redirectTo, loginHint string, isMobile bool, desktopToken string, inviteToken string, inviteId string) (string, *model.AppError) {
@@ -670,8 +705,8 @@ func (a *App) LoginByOAuth(rctx request.CTX, service string, userData io.Reader,
 		return nil, err
 	}
 	if user.AuthService == model.ServiceOpenid {
-		url := fmt.Sprintf("https://avatars.yandex.net/get-yapic/%s/200x200", user.Props["avatar_id"])
-		file, err := a.DownloadFromURL(url)
+		u := fmt.Sprintf("https://avatars.yandex.net/get-yapic/%s/200x200", user.Props["avatar_id"])
+		file, err := a.DownloadFromURL(u)
 		if err != nil || len(file) == 0 {
 			return user, nil
 		}
