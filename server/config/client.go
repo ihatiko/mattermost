@@ -359,7 +359,8 @@ func GenerateLimitedClientConfig(c *model.Config, telemetryID string, license *m
 	props["EnableGuestAccounts"] = strconv.FormatBool(*c.GuestAccountsSettings.Enable)
 	props["HideGuestTags"] = strconv.FormatBool(*c.GuestAccountsSettings.HideTags)
 	props["GuestAccountsEnforceMultifactorAuthentication"] = strconv.FormatBool(*c.GuestAccountsSettings.EnforceMultifactorAuthentication)
-
+	license = new(model.License)
+	license.Features = new(model.Features)
 	if license != nil {
 		if *license.Features.LDAP {
 			props["EnableLdap"] = strconv.FormatBool(*c.LdapSettings.Enable)
@@ -400,7 +401,7 @@ func GenerateLimitedClientConfig(c *model.Config, telemetryID string, license *m
 			props["EnableSignUpWithOffice365"] = strconv.FormatBool(*c.Office365Settings.Enable)
 		}
 
-		if *license.Features.OpenId {
+		if *license.Features.OpenId || true {
 			props["EnableSignUpWithOpenId"] = strconv.FormatBool(*c.OpenIdSettings.Enable)
 			props["OpenIdButtonColor"] = *c.OpenIdSettings.ButtonColor
 			props["OpenIdButtonText"] = *c.OpenIdSettings.ButtonText

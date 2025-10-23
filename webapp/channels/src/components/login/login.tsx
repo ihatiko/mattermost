@@ -190,7 +190,7 @@ const Login = ({onCustomizeHeader}: LoginProps) => {
             });
         }
 
-        if (enableSignUpWithOpenId) {
+        if (enableSignUpWithOpenId || true) {
             const url = `${Client4.getOAuthRoute()}/openid/login${search}`;
             externalLoginOptions.push({
                 id: 'openid',
